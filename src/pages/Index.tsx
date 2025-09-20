@@ -2,9 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
+import AudioPlayer from "@/components/AudioPlayer";
 
 const Index = () => {
   const [currentSection, setCurrentSection] = useState("home");
+  const [currentTrack, setCurrentTrack] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showPlayer, setShowPlayer] = useState(false);
 
   const navItems = [
     { id: "home", label: "Главная", icon: "Home" },
@@ -16,11 +20,31 @@ const Index = () => {
   ];
 
   const tracks = [
-    { title: "Electric Outro35", genre: "Alt Metal", duration: "3:42", isNew: true },
-    { title: "Electric Tulip Busto", genre: "Rap-Trap", duration: "4:15", isNew: true },
-    { title: "Lato Trap", genre: "Alt Metal", duration: "3:28", isNew: false },
-    { title: "Neon Dreams", genre: "Rap-Trap", duration: "4:01", isNew: false },
+    { title: "Electric Outro35", artist: "TheRadioMIG", genre: "Alt Metal", duration: "3:42", isNew: true },
+    { title: "Electric Tulip Busto", artist: "TheRadioMIG", genre: "Rap-Trap", duration: "4:15", isNew: true },
+    { title: "Lato Trap", artist: "TheRadioMIG", genre: "Alt Metal", duration: "3:28", isNew: false },
+    { title: "Neon Dreams", artist: "TheRadioMIG", genre: "Rap-Trap", duration: "4:01", isNew: false },
   ];
+
+  const handlePlayTrack = (trackIndex: number) => {
+    setCurrentTrack(trackIndex);
+    setIsPlaying(true);
+    setShowPlayer(true);
+  };
+
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleNextTrack = () => {
+    const nextTrack = (currentTrack + 1) % tracks.length;
+    setCurrentTrack(nextTrack);
+  };
+
+  const handlePreviousTrack = () => {
+    const prevTrack = currentTrack === 0 ? tracks.length - 1 : currentTrack - 1;
+    setCurrentTrack(prevTrack);
+  };
 
   const renderContent = () => {
     switch (currentSection) {
@@ -45,6 +69,7 @@ const Index = () => {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button 
                     size="lg" 
+                    onClick={() => handlePlayTrack(0)}
                     className="bg-gradient-to-r from-electric-orange to-primary text-white font-heading font-bold px-8 py-6 text-lg hover:scale-105 transition-all duration-300"
                   >
                     <Icon name="Play" className="mr-2" size={20} />
@@ -88,9 +113,10 @@ const Index = () => {
                         </div>
                         <Button 
                           size="sm" 
+                          onClick={() => handlePlayTrack(index)}
                           className="bg-electric-orange hover:bg-electric-orange/80 text-white rounded-full w-12 h-12 p-0"
                         >
-                          <Icon name="Play" size={20} />
+                          <Icon name={isPlaying && currentTrack === index ? "Pause" : "Play"} size={20} />
                         </Button>
                       </div>
                     </CardContent>
@@ -120,9 +146,12 @@ const Index = () => {
                         <p className="text-gray-400">{track.genre}</p>
                         <p className="text-sm text-gray-500">{track.duration}</p>
                       </div>
-                      <Button className="w-full bg-electric-orange hover:bg-electric-orange/80 text-white">
-                        <Icon name="Play" className="mr-2" size={16} />
-                        Играть
+                      <Button 
+                        onClick={() => handlePlayTrack(index)}
+                        className="w-full bg-electric-orange hover:bg-electric-orange/80 text-white"
+                      >
+                        <Icon name={isPlaying && currentTrack === index ? "Pause" : "Play"} className="mr-2" size={16} />
+                        {isPlaying && currentTrack === index ? "Пауза" : "Играть"}
                       </Button>
                     </div>
                   </CardContent>
@@ -274,8 +303,21 @@ const Index = () => {
         {renderContent()}
       </main>
 
+      {/* Audio Player */}
+      {showPlayer && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 p-4">
+          <AudioPlayer
+            track={tracks[currentTrack]}
+            isPlaying={isPlaying}
+            onPlayPause={handlePlayPause}
+            onNext={handleNextTrack}
+            onPrevious={handlePreviousTrack}
+          />
+        </div>
+      )}
+
       {/* Footer */}
-      <footer className="bg-dark-bg border-t border-purple-accent/20 py-8 mt-16">
+      <footer className={`bg-dark-bg border-t border-purple-accent/20 py-8 mt-16 ${showPlayer ? 'mb-32' : ''}`}>
         <div className="container mx-auto px-4 text-center">
           <p className="text-gray-400">
             © 2025 TheRadioMIG. Присоединяйся к сообществу поклонников настоящей музыки!
